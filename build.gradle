@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+version = '3.4.0'
+
+sourceCompatibility = '1.8'
+
+dependencies {
+    compile "io.vertx:vertx-core:$version"
+    compile "io.vertx:vertx-web:$version"
+    compile "io.vertx:vertx-rx-java:$version"
+    compile "io.vertx:vertx-lang-js:3.4.1"
+    compile 'org.apache.logging.log4j:log4j:2.8'
+    compile 'org.twitter4j:twitter4j-core:4.0.2'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+def mainVerticle = "io.vertx.twitter.TwitterVerticle"
+mainClassName = "io.vertx.core.Starter"
+run {
+    args = ["run", mainVerticle]
+}
+
+jar {
+    manifest {
+        attributes 'Main-Verticle': mainVerticle
+    }
+}
+
+shadowJar {
+    classifier = 'fat'
+    manifest {
+        attributes 'Main-Verticle': 'src.main.java.io.vertx.twitter.TwitterVerticle'
+    }
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+
+    into 'webroot', {
+        from 'webroot'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
+}
