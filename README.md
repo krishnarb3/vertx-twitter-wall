@@ -1,4 +1,4 @@
-# vertx-twitter-wall
+# Vertx Twitter
 Prerequisite task for GSOC-2017 under Eclipse Vertx
 
 <h2>The Twitter wall application:</h2>
@@ -21,3 +21,4 @@ Usage:
 ```
 ./gradlew run
 ```
+Visit localhost:9090
