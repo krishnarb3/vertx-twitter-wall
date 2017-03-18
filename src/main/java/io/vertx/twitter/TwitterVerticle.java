@@ -1,5 +1,6 @@
 package io.vertx.twitter;
 
+import com.google.gson.Gson;
 import io.vertx.core.Future;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
@@ -9,6 +10,10 @@ import io.vertx.rxjava.ext.web.handler.StaticHandler;
 import io.vertx.rxjava.ext.web.handler.sockjs.SockJSHandler;
 import rx.Observable;
 import twitter4j.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TwitterVerticle extends io.vertx.rxjava.core.AbstractVerticle {
 
@@ -78,19 +83,24 @@ public class TwitterVerticle extends io.vertx.rxjava.core.AbstractVerticle {
         vertx.periodicStream(4000).toObservable()
             .observeOn(RxHelper.schedulerHook(vertx).getNewThreadScheduler())
             .map(v -> {
-                QueryResult result = null;
+                String result = null;
                 try {
                     Twitter twitter = TwitterFactory.getSingleton();
                     Query query = new Query("#" + searchQuery);
                     query.setCount(100);
-                    result = twitter.search(query);
+                    QueryResult queryResult = twitter.search(query);
+                    List<TweetCustom> tweets = queryResult
+                            .getTweets().stream()
+                            .map(tweet -> new TweetCustom(tweet.getUser().getName(), tweet.getText(), tweet.getCreatedAt().toString()))
+                            .collect(Collectors.toList());
+                    result = new Gson().toJson(tweets);
                 } catch (TwitterException e) {
                     Observable.error(e);
                 }
                 return result;
             })
             .subscribeOn(RxHelper.scheduler(vertx))
-            .subscribe(v -> vertx.eventBus().publish("publish.to.client", "Hello")
+            .subscribe(res -> vertx.eventBus().publish("publish.to.client", res)
                     , e -> System.out.println("Error occurred")
             );
     }
