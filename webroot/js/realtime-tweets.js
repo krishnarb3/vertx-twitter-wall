@@ -27,8 +27,13 @@ function appendTweet(tweet) {
             </div> \
             <div class="card-action"> \
                 <a href="#">' + tweet.date + '</a> \
-                <a href="#">This is a link</a> \
             </div> \
             </div> \
             </div>';
+}
+
+function subToTag() {
+    query = document.getElementById('query').value;
+    console.log("Subbed to " + query);
+    window.location = '/api/' + query;
 }
